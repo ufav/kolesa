@@ -14,6 +14,8 @@ import re
 
 def get_data():
     start_time = time.time()
+
+    ################################# regions list
     try:
         url = 'https://kolesa.kz/'
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -30,6 +32,8 @@ def get_data():
     finally:
         driver.close()
         driver.quit()
+
+    ################################# cars list
     try:
         url = 'https://kolesa.kz/cars' #+ '/region-abaiskaya-oblast' #regions_list[0]
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -46,6 +50,8 @@ def get_data():
     finally:
         driver.close()
         driver.quit()
+
+    ################################# pages count
     try:
         url = 'https://kolesa.kz/cars/' + cars_list[0] + '/' + regions_list[0]
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -53,17 +59,21 @@ def get_data():
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         pages_count = int(soup.find('div', class_='pager').find_all('a')[-2].text)
         print(pages_count)
+        pages_list = ['']
+        for p in range(2, pages_count + 1):
+            pages_list.append('/?page=' + str(p))
     except Exception as _ex:
         print(_ex)
     finally:
         driver.close()
         driver.quit()
+
     result_list = []
     count = 1
     try:
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        for page in range(1, pages_count):
-            url = 'https://kolesa.kz/cars/' + cars_list[0] + '/' + regions_list[0] + '/?page=' + str(page)
+        for page in pages_list:
+            url = 'https://kolesa.kz/cars/' + cars_list[0] + '/' + regions_list[0] + page
             driver.get(url)
             time.sleep(random.randrange(2, 5))
             if count % 10 == 0:
@@ -87,7 +97,7 @@ def get_data():
                         'views': views
                     }
                 )
-            print(result_list)
+            #print(result_list)
             print(f'[+] Processed: {round(count / pages_count * 100, 2)}')
             count += 1
     except:
@@ -95,15 +105,23 @@ def get_data():
     finally:
         driver.close()
         driver.quit()
+        with open('data.json', 'w', encoding='utf-8') as file:
+            json.dump(result_list, file, indent=4, ensure_ascii=False)
+        print(round((time.time() - start_time) / 60, 2))
+        return '[INFO] Data collected successfully'
 
 
-def test():
+def test1():
+    pages = ['']
     result_list = []
     count = 1
     try:
+        for page1 in range(2, 9):
+            pages.append('/?page=' + str(page1))
+        print(pages)
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        for page in range(2, 3):
-            url = 'https://kolesa.kz/cars/audi/region-abaiskaya-oblast/' + '/?page=' + str(page)
+        for page in pages:
+            url = 'https://kolesa.kz/cars/audi/region-abaiskaya-oblast/' + page
             driver.get(url)
             time.sleep(random.randrange(2, 5))
             if count % 10 == 0:
@@ -137,9 +155,18 @@ def test():
         driver.quit()
 
 
+def test2():
+    pages = ['']
+    pages_count = 8
+    for page in range(2, pages_count):
+        pages.append('/?page=' + str(page))
+    print(pages)
+
+
 def main():
-    #get_data()
-    test()
+    get_data()
+    #test1()
+    #test2()
 
 
 if __name__ == '__main__':
