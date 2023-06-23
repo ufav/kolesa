@@ -53,63 +53,67 @@ def get_data():
 
     result_list = []
     count = 1
-    for car in cars_list:
-        print(car)
-        ################################# pages count
-        try:
-            pages_list = ['']
-            url = 'https://kolesa.kz/cars/' + car + '/' + regions_list[0]
-            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-            driver.get(url)
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            if str(soup).find('Объявлений не найдено') > 0:
-                continue
-            if str(soup).find('<div class="pager"') > 0:
-                pages_count = int(soup.find('div', class_='pager').find_all('a')[-2].text)
-                print(pages_count)
-                for p in range(2, pages_count + 1):
-                    pages_list.append('/?page=' + str(p))
-        except Exception as _ex:
-            print(_ex)
-        finally:
-            driver.close()
-            driver.quit()
-
-        try:
-            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-            for page in pages_list:
-                url = 'https://kolesa.kz/cars/' + car + '/' + regions_list[0] + page
+    for region in regions_list:
+        for car in cars_list:
+            print(car)
+            ################################# pages count
+            try:
+                pages_list = ['']
+                url = 'https://kolesa.kz/cars/' + car + '/' + region
+                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
                 driver.get(url)
-                time.sleep(random.randrange(2, 5))
-                if count % 10 == 0:
-                    time.sleep(random.randrange(5, 9))
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
-                adds_div = soup.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['a-list__item'])
-                for add in adds_div:
-                    vehicle_name = add.find('h5', class_='a-card__title').text.strip()
-                    price = add.find('span', class_='a-card__price').text.strip()
-                    price = unquote(price)
-                    description = add.find('p', class_='a-card__description').text.strip()
-                    #region = add.find('div', class_='a-card__data').text.strip()
-                    date = add.find('span', class_='a-card__param a-card__param--date').text.strip()
-                    views = add.find('span', class_='a-card__views nb-views').text.strip()
-                    result_list.append(
-                        {
-                            'name': vehicle_name,
-                            'price': price,
-                            'description': description,
-                            'date': date,
-                            'views': views
-                        }
-                    )
-                #print(result_list)
-            print(f'[+] Processed: {round(count / len(cars_list) * 100, 2)}')
-            count += 1
-        except:
-            print(_ex)
-        finally:
-            driver.close()
-            driver.quit()
+                if str(soup).find('Объявлений не найдено') > 0:
+                    continue
+                if str(soup).find('<div class="pager"') > 0:
+                    pages_count = int(soup.find('div', class_='pager').find_all('a')[-2].text)
+                    print(pages_count)
+                    for p in range(2, pages_count + 1):
+                        pages_list.append('/?page=' + str(p))
+            except Exception as _ex:
+                print(_ex)
+            finally:
+                driver.close()
+                driver.quit()
+
+            try:
+                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+                for page in pages_list:
+                    url = 'https://kolesa.kz/cars/' + car + '/' + region + page
+                    driver.get(url)
+                    time.sleep(random.randrange(2, 5))
+                    if count % 10 == 0:
+                        time.sleep(random.randrange(5, 9))
+                    soup = BeautifulSoup(driver.page_source, 'html.parser')
+                    adds_div = soup.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['a-list__item'])
+                    for add in adds_div:
+                        vehicle_name = add.find('h5', class_='a-card__title').text.strip()
+                        price = add.find('span', class_='a-card__price').text.strip()
+                        price = unquote(price)
+                        description = add.find('p', class_='a-card__description').text.strip()
+                        city = add.find('span', class_='a-card__param').text.strip()
+                        date_add = add.find('span', class_='a-card__param a-card__param--date').text.strip()
+                        views = add.find('span', class_='a-card__views nb-views').text.strip()
+                        result_list.append(
+                            {
+                                'date_load': time.time(),
+                                'name': vehicle_name,
+                                'price': price,
+                                'description': description,
+                                'region': region,
+                                'city': city,
+                                'date_add': date_add,
+                                'views': views
+                            }
+                        )
+                    #print(result_list)
+                print(f'[+] Processed: {round(count / len(cars_list) * 100, 2)}')
+                count += 1
+            except:
+                print(_ex)
+            finally:
+                driver.close()
+                driver.quit()
 
     with open('data.json', 'w', encoding='utf-8') as file:
         json.dump(result_list, file, indent=4, ensure_ascii=False)
@@ -123,7 +127,7 @@ def test1():
     ################################# pages count
     try:
         pages_list = ['']
-        url = 'https://kolesa.kz/cars/' + 'tesla/region-abaiskaya-oblast'
+        url = 'https://kolesa.kz/cars/' + 'jeep/region-abaiskaya-oblast'
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
         driver.get(url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -147,7 +151,7 @@ def test1():
     try:
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
         for page in pages_list:
-            url = 'https://kolesa.kz/cars/' + 'tesla/region-abaiskaya-oblast' + page
+            url = 'https://kolesa.kz/cars/' + 'jeep/region-abaiskaya-oblast' + page
             driver.get(url)
             time.sleep(random.randrange(2, 5))
             if count % 10 == 0:
@@ -159,15 +163,18 @@ def test1():
                 price = add.find('span', class_='a-card__price').text.strip()
                 price = unquote(price)
                 description = add.find('p', class_='a-card__description').text.strip()
-                #region = add.find('div', class_='a-card__data').text.strip()
-                date = add.find('span', class_='a-card__param a-card__param--date').text.strip()
+                city = add.find('span', class_='a-card__param').text.strip()
+                date_add = add.find('span', class_='a-card__param a-card__param--date').text.strip()
                 views = add.find('span', class_='a-card__views nb-views').text.strip()
                 result_list.append(
                     {
+                        'date_load': time.time(),
                         'name': vehicle_name,
                         'price': price,
                         'description': description,
-                        'date': date,
+                        'region': region,
+                        'city': city,
+                        'date_add': date_add,
                         'views': views
                     }
                 )
