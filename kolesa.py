@@ -1,9 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait as wait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 import random
@@ -163,6 +160,7 @@ def test1():
                 price = add.find('span', class_='a-card__price').text.strip()
                 price = unquote(price)
                 description = add.find('p', class_='a-card__description').text.strip()
+                manufacture_year = description.split(',')[0].replace()
                 city = add.find('span', class_='a-card__param').text.strip()
                 date_add = add.find('span', class_='a-card__param a-card__param--date').text.strip()
                 views = add.find('span', class_='a-card__views nb-views').text.strip()
@@ -172,7 +170,6 @@ def test1():
                         'name': vehicle_name,
                         'price': price,
                         'description': description,
-                        'region': region,
                         'city': city,
                         'date_add': date_add,
                         'views': views
