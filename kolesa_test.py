@@ -13,22 +13,7 @@ def get_data():
     start_time = time.time()
 
     ################################# regions list
-    try:
-        url = 'https://kolesa.kz/'
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        driver.get(url)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        regions = soup.find_all('div', class_='block-links-list row')[-1]
-        regions = regions.find_all('a')
-        regions_list = []
-        for tag in regions:
-            regions_list.append(re.search('\/cars\/(.*)\/', tag['href']).group(1))
-        print(regions_list)
-    except Exception as _ex:
-        print(_ex)
-    finally:
-        driver.close()
-        driver.quit()
+    regions_list_ex = ['/region-abaiskaya-oblast', '/region-almatinskaya-oblast', '/region-yuzhnokazahstanskaya-oblast']
 
     ################################# cars list
     try:
@@ -217,115 +202,10 @@ def get_data():
     return '[INFO] Data collected successfully'
 
 
-def test1():
-    result_list = []
-
-    ################################# pages count
-    try:
-        pages_list = ['']
-        url = 'https://kolesa.kz/cars/' + 'honda/region-abaiskaya-oblast'
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        driver.get(url)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        if str(soup).find('Объявлений не найдено') > 0:
-            print('Объявлений не найдено')
-        if str(soup).find('<div class="pager"') > 0:
-            print('Больше одной страницы')
-            pages_count = int(soup.find('div', class_='pager').find_all('a')[-2].text)
-            print(pages_count)
-            for p in range(2, pages_count + 1):
-                pages_list.append('/?page=' + str(p))
-        else:
-            print('Одна страница')
-    except Exception as _ex:
-        print(_ex)
-    finally:
-        driver.close()
-        driver.quit()
-
-    count = 1
-    try:
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        for page in pages_list:
-            url = 'https://kolesa.kz/cars/' + 'honda/region-abaiskaya-oblast' + page
-            driver.get(url)
-            time.sleep(random.randrange(2, 5))
-            if count % 10 == 0:
-                time.sleep(random.randrange(5, 9))
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            adds_div = soup.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['a-list__item'])
-            for add in adds_div:
-                vehicle_name = add.find('h5', class_='a-card__title').text.strip()
-                price = add.find('span', class_='a-card__price').text.strip()
-                price = unquote(price).replace('\xa0', '').replace('₸', '').strip()
-                description = add.find('p', class_='a-card__description').text.strip()
-                manufacture_year = description.split(',')[0].replace('г.', '').strip()
-                body = description.split(',')[1].strip()
-                engine = description.split(',')[2].replace('л', '').strip()
-                try:
-                    wheel = re.search('[^,]*руль[^,]*', description).group(0).strip()
-                except:
-                    wheel = ''
-                try:
-                    transmission = re.search('[^,]*КПП[^,]*', description).group(0).strip()
-                except:
-                    transmission = ''
-                city = add.find('span', class_='a-card__param').text.strip()
-                date_add = add.find('span', class_='a-card__param a-card__param--date').text.strip()
-                views = add.find('span', class_='a-card__views nb-views').text.strip()
-                imgs = add.find_all('img')
-                uniq_id = imgs[0]['src']
-                url = 'https://kolesa.kz' + add.find('div', class_='a-card__picture').find('a', class_='a-card__link')['href']
-                result_list.append(
-                    {
-                        'date_load': time.time(),
-                        'name': vehicle_name,
-                        'price': price,
-                        'description': description,
-                        'city': city,
-                        'date_add': date_add,
-                        'views': views,
-                        'manufacture_year': manufacture_year,
-                        'body': body,
-                        'engine': engine,
-                        'wheel': wheel,
-                        'transmission': transmission,
-                        'uniq_id': uniq_id,
-                        'url': url
-                    }
-                )
-            print(result_list)
-            # print(f'[+] Processed: {round(count / pages_count * 100, 2)}')
-            count += 1
-    except:
-        print(_ex)
-    finally:
-        driver.close()
-        driver.quit()
-
-
-def test2():
-    pages = ['']
-    pages_count = 8
-    for page in range(2, pages_count):
-        pages.append('/?page=' + str(page))
-    print(pages)
-
-
-def test3():
-    st = '<div class="pager">'
-    if st.find('paer') > 0:
-        print('Yes')
-    else:
-        print('No')
-
-
 def main():
-    #get_data()
-    test1()
-    # test2()
-    # test3()
+    get_data()
 
 
 if __name__ == '__main__':
     main()
+
