@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
+import datetime
 import random
 import json
 from urllib.parse import unquote
@@ -202,8 +203,14 @@ def get_data():
     return '[INFO] Data collected successfully'
 
 
+def test12():
+    ts = time.time()
+    timestamp = datetime.datetime.fromtimestamp(ts).strftime('%d.%m.%Y %H:%M:%S')
+    print(str(timestamp))
+
 def main():
-    get_data()
+    test12()
+    #get_data()
 
 
 if __name__ == '__main__':
